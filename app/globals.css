@@ -1,0 +1,292 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-background: #F2F3F8;
+    --color-foreground: #0B0B12;
+    --color-secondary: #62626E;
+    --color-surface: #FFFFFF;
+    --color-surface-elevated: #F8F9FC;
+    --color-border: rgba(10, 10, 20, 0.08);
+    --shadow-card: 0 20px 60px rgba(30, 40, 90, 0.10);
+    --shadow-nav: 0 8px 32px rgba(30, 40, 90, 0.12);
+  }
+
+  .dark {
+    --color-background: #030303;
+    --color-foreground: #FAFAFA;
+    --color-secondary: #888888;
+    --color-surface: #0A0A0A;
+    --color-surface-elevated: #111111;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --shadow-card: 0 20px 60px rgba(0, 0, 0, 0.60);
+    --shadow-nav: 0 8px 32px rgba(0, 0, 0, 0.80);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-secondary) transparent;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  ::selection {
+    background: rgba(34, 211, 238, 0.3);
+    color: var(--color-foreground);
+  }
+
+  .map-tiles-dark {
+    filter: grayscale(1) invert(1) brightness(0.72) contrast(0.88);
+  }
+
+  .map-tiles-light {
+    filter: grayscale(0.85) saturate(0.35) brightness(1.04) contrast(0.94);
+  }
+}
+
+@property --border-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@layer components {
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #22D3EE, #4F7CFF, #8B5CF6);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 4s ease infinite;
+  }
+
+  .gradient-text-static {
+    background: linear-gradient(135deg, #22D3EE, #4F7CFF, #8B5CF6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Card styles */
+  .card {
+    @apply bg-surface rounded-4xl p-6 md:p-8 relative overflow-hidden;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-card);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(10, 10, 20, 0.08), transparent);
+  }
+
+  .dark .card::before {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  }
+
+  /* Glass effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--color-border);
+  }
+
+  .dark .glass {
+    background: rgba(10, 10, 10, 0.6);
+  }
+
+  /* Pill/chip styles */
+  .pill {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-mono;
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+  }
+
+  /* Gradient border animation */
+  .gradient-border {
+    position: relative;
+    background: var(--color-surface);
+    border-radius: 32px;
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 34px;
+    background: conic-gradient(from var(--border-angle, 0deg), #22D3EE, #4F7CFF, #8B5CF6, #F472B6, #22D3EE);
+    z-index: -1;
+    animation: border-rotate 4s linear infinite;
+    will-change: transform;
+  }
+
+  /* Section panel */
+  .section-panel {
+    @apply w-full mx-auto rounded-5xl p-6 md:p-10 lg:p-14 bg-surface relative overflow-hidden;
+    max-width: 1280px;
+    border: 1px solid var(--color-border);
+  }
+
+  /* Spotlight effect on cards */
+  .spotlight-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .spotlight-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(34, 211, 238, 0.06),
+      transparent 40%
+    );
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .spotlight-card:hover::after {
+    opacity: 1;
+  }
+
+  /* Button gradient */
+  .btn-gradient {
+    @apply px-8 py-4 rounded-full font-display font-semibold text-white relative overflow-hidden;
+    background: linear-gradient(135deg, #22D3EE, #4F7CFF, #8B5CF6);
+    background-size: 200% 200%;
+    transition: all 0.3s ease;
+  }
+
+  .btn-gradient:hover {
+    background-position: 100% 50%;
+    box-shadow: 0 8px 30px rgba(79, 124, 255, 0.3);
+  }
+
+  .btn-outline {
+    @apply px-8 py-4 rounded-full font-display font-semibold relative overflow-hidden;
+    border: 2px solid var(--color-border);
+    transition: all 0.3s ease;
+  }
+
+  .btn-outline:hover {
+    border-color: #4F7CFF;
+    box-shadow: 0 0 30px rgba(79, 124, 255, 0.15);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .text-stroke {
+    -webkit-text-stroke: 1px var(--color-foreground);
+    color: transparent;
+  }
+  
+  .text-stroke-accent {
+    -webkit-text-stroke: 1px #4F7CFF;
+    color: transparent;
+  }
+}
+
+/* View transitions */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid #4F7CFF;
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-secondary);
+  border-radius: 3px;
+}
+
+/* Leaflet Custom Map Styles */
+.leaflet-pane {
+  z-index: 10 !important;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 20 !important;
+}
+
+.leaflet-container {
+  font-family: inherit !important;
+  background-color: transparent !important;
+  outline: none;
+}
+
+.custom-leaflet-tooltip {
+  background: rgba(10, 10, 18, 0.92) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(59, 130, 246, 0.4) !important;
+  color: #FAFAFA !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+}
+
+:root:not(.dark) .custom-leaflet-tooltip {
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: #0B0B12 !important;
+  border: 1px solid rgba(59, 130, 246, 0.25) !important;
+  box-shadow: 0 10px 25px -5px rgba(30, 40, 90, 0.15) !important;
+}
+
+.custom-leaflet-tooltip:before {
+  display: none !important;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
