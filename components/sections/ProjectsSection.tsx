@@ -438,7 +438,7 @@ function ProjectModal({ repo, onClose, lang }: { repo: GitHubRepo; onClose: () =
                   );
                 },
                 img: ({node, ...props}) => (
-                  <img className="rounded-2xl border border-foreground/10 shadow-2xl my-10 max-w-full" loading="lazy" {...props} />
+                  <img alt="" className="rounded-2xl border border-foreground/10 shadow-2xl my-10 max-w-full" loading="lazy" {...props} />
                 ),
               }}
             >

@@ -1,22 +1,37 @@
 "use client";
 
-import { useState } from "react";
-import { GitHubRepo } from "@/lib/github";
-import { RepoConfig } from "@/lib/reposConfig";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import type { GitHubRepo } from "@/lib/github";
+import type { RepoConfig } from "@/lib/reposConfig";
 
 export function AdminClient({ initialRepos }: { initialRepos: GitHubRepo[] }) {
+  const router = useRouter();
   const [repos, setRepos] = useState<GitHubRepo[]>(initialRepos);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const messageTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const updateRepo = (name: string, updates: Partial<GitHubRepo>) => {
-    setRepos(repos.map(r => r.name === name ? { ...r, ...updates } : r));
+    setRepos(prev => prev.map(r => r.name === name ? { ...r, ...updates } : r));
+  };
+
+  const showMessage = (text: string, duration = 4000) => {
+    clearTimeout(messageTimer.current);
+    setMessage(text);
+    messageTimer.current = setTimeout(() => setMessage(""), duration);
+  };
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    router.refresh();
   };
 
   const handleSave = async () => {
     setSaving(true);
+    clearTimeout(messageTimer.current);
     setMessage("");
-    
+
     // Build the config map
     const configMap: Record<string, RepoConfig> = {};
     repos.forEach(repo => {
@@ -34,15 +49,16 @@ export function AdminClient({ initialRepos }: { initialRepos: GitHubRepo[] }) {
         body: JSON.stringify(configMap)
       });
       if (res.ok) {
-        setMessage("✅ Configuration enregistrée avec succès !");
+        showMessage("✅ Configuration enregistrée avec succès !");
       } else {
-        setMessage("❌ Erreur lors de l'enregistrement.");
+        const data = await res.json().catch(() => null);
+        if (res.status === 401) router.refresh(); // session expired → back to the login form
+        showMessage(`❌ ${data?.error || "Erreur lors de l'enregistrement."}`, 8000);
       }
     } catch {
-      setMessage("❌ Erreur lors de l'enregistrement.");
+      showMessage("❌ Erreur réseau lors de l'enregistrement.", 8000);
     } finally {
       setSaving(false);
-      setTimeout(() => setMessage(""), 3000);
     }
   };
 
@@ -66,8 +82,14 @@ export function AdminClient({ initialRepos }: { initialRepos: GitHubRepo[] }) {
           </div>
           
           <div className="flex items-center gap-4 w-full md:w-auto">
-            {message && <span className="text-sm font-medium whitespace-nowrap px-4 py-2 rounded-xl bg-accent-blue/10 text-accent-blue border border-accent-blue/20">{message}</span>}
-            <button 
+            {message && <span role="status" className="text-sm font-medium px-4 py-2 rounded-xl bg-accent-blue/10 text-accent-blue border border-accent-blue/20 max-w-md">{message}</span>}
+            <button
+              onClick={handleLogout}
+              className="px-4 py-3.5 rounded-2xl text-sm font-medium text-secondary border border-border hover:text-primary hover:border-white/20 transition-colors shrink-0"
+            >
+              Déconnexion
+            </button>
+            <button
               onClick={handleSave}
               disabled={saving}
               className="w-full md:w-auto px-8 py-3.5 rounded-2xl bg-accent-blue text-white font-bold hover:bg-accent-blue/90 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all duration-300 disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"

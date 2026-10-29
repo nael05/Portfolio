@@ -135,10 +135,14 @@ async function getReadmeUrl(repoFullName: string): Promise<string | null> {
   }
 }
 
-export async function fetchGitHubRepos(): Promise<GitHubRepo[]> {
+// includeHidden: the admin needs every repo; the public site only the visible ones
+// (skipping hidden repos also saves ~6 GitHub API calls each).
+export async function fetchGitHubRepos(
+  { includeHidden = false }: { includeHidden?: boolean } = {}
+): Promise<GitHubRepo[]> {
   const headers = getHeaders();
   const hasToken = Boolean(process.env.GITHUB_TOKEN);
-  const configMap = getReposConfig();
+  const configMap = await getReposConfig();
 
   try {
     const repos: GitHubApiRepo[] = [];
@@ -161,7 +165,9 @@ export async function fetchGitHubRepos(): Promise<GitHubRepo[]> {
         endpoint.searchParams.set("type", "owner");
       }
 
-      const res = await fetch(endpoint, { headers, cache: "no-store" });
+      // Cached for an hour (like the per-repo calls below): a no-store fetch here
+      // made the home page fully dynamic and hit the GitHub API on every visit.
+      const res = await fetch(endpoint, { headers, next: { revalidate: 3600 } });
       if (!res.ok) {
         const text = await res.text();
         console.error("GitHub API error:", res.status, res.url, text);
@@ -188,7 +194,8 @@ export async function fetchGitHubRepos(): Promise<GitHubRepo[]> {
       return (
         isPublic &&
         repo.name.toLowerCase() !== GITHUB_USERNAME.toLowerCase() &&
-        (!isOwnRepo || !repo.fork)
+        (!isOwnRepo || !repo.fork) &&
+        (includeHidden || configMap[repo.name]?.visible !== false)
       );
     });
 

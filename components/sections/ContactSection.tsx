@@ -16,10 +16,20 @@ import {
   Loader2,
 } from "lucide-react";
 
+// Stable ids so the selected subject survives a language switch.
+const SUBJECTS = [
+  { id: "internship", fr: "Proposition de stage", en: "Internship offer" },
+  { id: "workstudy", fr: "Alternance", en: "Work-Study" },
+  { id: "web", fr: "Projet web", en: "Web project" },
+  { id: "other", fr: "Autre", en: "Other" },
+] as const;
+
+type SubjectId = (typeof SUBJECTS)[number]["id"];
+
 type FormData = {
   name: string;
   email: string;
-  subject: string;
+  subject: SubjectId;
   message: string;
   honeypot: string;
 };
@@ -35,7 +45,7 @@ export function ContactSection() {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
-    subject: "Proposition de stage",
+    subject: "internship",
     message: "",
     honeypot: "",
   });
@@ -45,11 +55,12 @@ export function ContactSection() {
 
   const validate = (): boolean => {
     const newErrors: Partial<Record<keyof FormData, string>> = {};
-    if (!formData.name.trim()) newErrors.name = "Votre nom est requis";
+    const en = lang === "en";
+    if (!formData.name.trim()) newErrors.name = en ? "Your name is required" : "Votre nom est requis";
     if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-      newErrors.email = "Email invalide";
-    if (!formData.message.trim() || formData.message.length < 10)
-      newErrors.message = "10 caractères minimum";
+      newErrors.email = en ? "Invalid email" : "Email invalide";
+    if (!formData.message.trim() || formData.message.trim().length < 10)
+      newErrors.message = en ? "10 characters minimum" : "10 caractères minimum";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -67,7 +78,7 @@ export function ContactSection() {
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          subject: formData.subject,
+          subject: SUBJECTS.find((s) => s.id === formData.subject)?.[lang === "en" ? "en" : "fr"],
           message: formData.message,
         }),
       });
@@ -76,7 +87,7 @@ export function ContactSection() {
       setFormData({
         name: "",
         email: "",
-        subject: "Proposition de stage",
+        subject: "internship",
         message: "",
         honeypot: "",
       });
@@ -125,10 +136,7 @@ export function ContactSection() {
                         setMode(m);
                         setFormData((prev) => ({
                           ...prev,
-                          subject:
-                            m === "stage"
-                              ? (lang === 'en' ? "Internship offer" : "Proposition de stage")
-                              : (lang === 'en' ? "Web project" : "Projet web"),
+                          subject: m === "stage" ? "internship" : "web",
                         }));
                       }}
                       className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors ${
@@ -215,14 +223,15 @@ export function ContactSection() {
                     id="subject"
                     value={formData.subject}
                     onChange={(e) =>
-                      setFormData({ ...formData, subject: e.target.value })
+                      setFormData({ ...formData, subject: e.target.value as SubjectId })
                     }
                     className="w-full px-5 py-3.5 rounded-[18px] bg-surface border border-border focus:border-accent-blue outline-none transition-colors text-foreground appearance-none"
                   >
-                    <option>{lang === 'en' ? 'Internship offer' : 'Proposition de stage'}</option>
-                    <option>{lang === 'en' ? 'Work-Study' : 'Alternance'}</option>
-                    <option>{lang === 'en' ? 'Web project' : 'Projet web'}</option>
-                    <option>{lang === 'en' ? 'Other' : 'Autre'}</option>
+                    {SUBJECTS.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {lang === 'en' ? s.en : s.fr}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

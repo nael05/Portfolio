@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth";
 import { fetchGitHubRepos } from "@/lib/github";
@@ -5,6 +6,11 @@ import { AdminClient } from "./AdminClient";
 import { LoginClient } from "./LoginClient";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Administration",
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminPage() {
   const cookieStore = cookies();
@@ -22,6 +28,6 @@ export default async function AdminPage() {
     return <LoginClient />;
   }
 
-  const repos = await fetchGitHubRepos();
+  const repos = await fetchGitHubRepos({ includeHidden: true });
   return <AdminClient initialRepos={repos} />;
 }

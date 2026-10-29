@@ -24,7 +24,8 @@ export function LoginClient() {
       if (res.ok) {
         router.refresh();
       } else {
-        setError("Mot de passe incorrect");
+        const data = await res.json().catch(() => null);
+        setError(data?.error || "Mot de passe incorrect");
       }
     } catch (err) {
       setError("Erreur de connexion");

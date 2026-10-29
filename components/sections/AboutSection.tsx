@@ -96,7 +96,7 @@ export function AboutSection() {
               </div>
             </div>
 
-            {/* Interactive Leaflet Map */}
+            {/* Simple Île-de-France map */}
             <div className="flex-1 min-h-[310px] w-full rounded-2xl overflow-hidden">
               <InterventionMap />
             </div>
